@@ -5,12 +5,12 @@ from numpy import number
 
 MAX_VALUE = (2**12)-1
 
-def add_testname(test_name:str):
+def add_testname(test_name):
     file = open("test_names.txt", "a")
     file.write(test_name + "\n")
     file.close()
 
-def create_binary_file(filename:str, vars:list):
+def create_binary_file(filename, vars):
     add_testname(filename)
     file = open(filename + ".bin", "wb")
     size = len(vars)
@@ -28,9 +28,9 @@ def create_binary_file(filename:str, vars:list):
         i+=2
     file.close()
 
-def create_text_file(filename:str, vars:list):
+def create_text_file(filename, vars):
     file = open(filename + ".txt", "w")
-    if len(vars) == 0:
+    if len(vars) < 2:
         file.write('--Sorted Max 32 Values--\n')
         file.write('--Last 32 Values--\n')
     else:
@@ -95,12 +95,19 @@ def fifty_vars():
     create_binary_file(filename, vars)
     create_text_file(filename, vars)
 
-def main():
+def tests():
     simple_test()
     zero_at_end()
     empty_file()
     one_byte()
     fifty_vars()
+
+def main():
+    tests()
+
+class Creator:
+    def __init__(self):
+        tests()
 
 if __name__ == "__main__":
     main()

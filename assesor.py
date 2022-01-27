@@ -7,9 +7,17 @@ from datetime import datetime as dt
 import filecmp as fc
 import itertools as it
 import binaryCreator
+from sys import platform
+import sys
 
 EXE = None
 CLEAN = False
+
+def print_white_space():
+    if sys.version_info.major == 2:
+        print
+    else:
+        print()
 
 def cleanup():
     test_names = open('test_names.txt', 'r')
@@ -40,56 +48,69 @@ def get_exe():
         root.withdraw()
         EXE = filedialog.askopenfilename()
 
-def run_script(args:list) -> list:
+def run_script(args):
     ret = [ 0, "no error"]
     try: 
-        ret[0] = subprocess.check_call(args)
+        ret[0] = subprocess.call(args)
     except subprocess.CalledProcessError as e:
         ret[1] = e.output
     return ret
 
-def print_txts(test_name:str):
+def print_txts(test_name):
     submission = open(test_name + '_submission.txt', 'r')
     correct = open(test_name + '.txt', 'r')
     print("**SUBMISSION**              **CORRECT_OUTPUT**      ")
-    for submission_line, correct_line in it.zip_longest(submission, correct):
-        if submission_line is None:
-            print(f'{" ":<24}' + "    " + f'{correct_line[0:-1]:<24}')
-        elif correct_line is None:
-            print(f'{submission_line[0:-1]:<24}' + "    " + f'{" ":<24}')
-        else:
-            print(f'{submission_line[0:-1]:<24}' + "    " + f'{correct_line[0:-1]:<24}')
+    if sys.version_info.major == 2:
+        for submission_line, correct_line in it.izip_longest(submission, correct):
+            if submission_line is None:
+                print('{0: <24}'.format(' ')  + "    " + '{0: <24}'.format(correct_line[0:-1]))
+            elif correct_line is None:
+                print('{0: <24}'.format(submission_line[0:-1])  + "    " + '{0: <24}'.format(' '))
+            else:
+                print('{0: <24}'.format(submission_line[0:-1])  + "    " + '{0: <24}'.format(correct_line[0:-1]))
+    else:
+        for submission_line, correct_line in it.zip_longest(submission, correct):
+            if submission_line is None:
+                print('{0: <24}'.format(' ')  + "    " + '{0: <24}'.format(correct_line[0:-1]))
+            elif correct_line is None:
+                print('{0: <24}'.format(submission_line[0:-1])  + "    " + '{0: <24}'.format(' '))
+            else:
+                print('{0: <24}'.format(submission_line[0:-1])  + "    " + '{0: <24}'.format(correct_line[0:-1]))
     submission.close()
     correct.close()
 
-def run_test(test_name:str):
-    args = [EXE, test_name + ".bin", test_name + "_submission.txt"]
+def run_test(test_name):
+    if platform == 'windows':
+        args = [EXE, test_name + ".bin", test_name + "_submission.txt"]
+    else:
+        args = ['./' + EXE, test_name + ".bin", test_name + "_submission.txt"]
     start_time = dt.now()
     returned = run_script(args)
     if returned[1] != "no error":
         print(test_name + " hard faulted.")
         print(returned[0])
         print(returned[1])
-        print()
-        print()
+        print_white_space()
+        print_white_space()
     else:
         end_time = dt.now()
         time_delta = end_time - start_time
         if fc.cmp(test_name + ".txt", test_name + "_submission.txt", shallow = False):
             print(test_name + " passed in " + str(time_delta) + " seconds.")
-            print()
-            print()
+            print_white_space()
+            print_white_space()
         else:
             print(test_name + " failed in " + str(time_delta) + " seconds.")
             print_txts(test_name)
-            print()
-            print()
+            print_white_space()
+            print_white_space()
 
 def main():
     get_exe()
+    bc = binaryCreator.Creator()
     if os.path.exists("test_names.txt"):
         test_names = open('test_names.txt', 'r')
-        print()
+        print_white_space()
         for test_name in test_names:
             if test_name != "":
                 run_test(test_name[0:-1])
@@ -99,8 +120,6 @@ def main():
         os.remove("test_names.txt")
     else:
         print("Must run binaryCreatorFirst.")
-
-    
 
 if __name__ == "__main__":
     main()
