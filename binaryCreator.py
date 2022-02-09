@@ -15,9 +15,18 @@ def create_binary_file(filename, vars):
     file = open(filename + ".bin", "wb")
     size = len(vars)
     i = 0
+    odd = False
+    if size % 2 == 1:
+        odd = True
     while i < size:
         if size == 1:
             file.write(bytearray(vars))
+        elif odd and i == size-1:
+            binary = '{0:012b}'.format(vars[i]) + '{0:04b}'.format(0)
+            bytes_to_write = []
+            bytes_to_write.append(int(binary[0:8], 2))
+            bytes_to_write.append(int(binary[8:16], 2))
+            file.write(bytearray(bytes_to_write))
         else:
             binary = '{0:012b}'.format(vars[i]) + '{0:012b}'.format(vars[i+1])
             bytes_to_write = []
@@ -34,8 +43,6 @@ def create_text_file(filename, vars):
         file.write('--Sorted Max 32 Values--\n')
         file.write('--Last 32 Values--\n')
     else:
-        if vars[-1] == 0:
-            vars.pop()
         size = len(vars)
         sorted_vars = sorted(vars, reverse=False)
         if size > 32:
@@ -63,6 +70,12 @@ def simple_test():
 def zero_at_end():
     filename = "zero_at_end"
     vars = [123,76,25,86,91,0]
+    create_binary_file(filename, vars)
+    create_text_file(filename, vars)
+
+def odd_number_of_values():
+    filename = "odd_number_of_values"
+    vars = [123,76,25,86,91]
     create_binary_file(filename, vars)
     create_text_file(filename, vars)
 
@@ -95,12 +108,36 @@ def fifty_vars():
     create_binary_file(filename, vars)
     create_text_file(filename, vars)
 
+def ten_thousand():
+    filename = "ten_thousand"
+    value = 358
+    vars = [ ]
+    number_of_vars = 10000
+    i = 0
+    while i < number_of_vars:
+        value = value * i - 52
+        while value < 0:
+            value += MAX_VALUE
+        while value > MAX_VALUE:
+            value -= MAX_VALUE
+        vars.append(value)
+        i+=1
+    create_binary_file(filename, vars)
+    create_text_file(filename, vars)
+
 def tests():
     simple_test()
     zero_at_end()
+    odd_number_of_values()
     empty_file()
     one_byte()
     fifty_vars()
+    ten_thousand()
+    #missing_input_file
+    #missing_output_file
+    #incorrect_input_extension
+    #incorrect_output_extension
+    #input_file_doesn't_exist
 
 def main():
     tests()

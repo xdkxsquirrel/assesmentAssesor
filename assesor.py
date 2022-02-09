@@ -3,7 +3,7 @@ import subprocess
 import argparse
 import tkinter as tk
 from tkinter import filedialog
-from datetime import datetime as dt
+import time
 import filecmp as fc
 import itertools as it
 import binaryCreator
@@ -53,6 +53,10 @@ def run_script(args):
     try: 
         ret[0] = subprocess.call(args)
     except subprocess.CalledProcessError as e:
+        ret[0] = -1
+        ret[1] = e.output
+    except Exception as e:
+        ret[0] = -1
         ret[1] = e.output
     return ret
 
@@ -84,7 +88,7 @@ def run_test(test_name):
         args = [EXE, test_name + ".bin", test_name + "_submission.txt"]
     else:
         args = ['./' + EXE, test_name + ".bin", test_name + "_submission.txt"]
-    start_time = dt.now()
+    start_time = time.perf_counter()
     returned = run_script(args)
     if returned[1] != "no error":
         print(test_name + " hard faulted.")
@@ -93,15 +97,20 @@ def run_test(test_name):
         print_white_space()
         print_white_space()
     else:
-        end_time = dt.now()
+        end_time = time.perf_counter()
         time_delta = end_time - start_time
-        if fc.cmp(test_name + ".txt", test_name + "_submission.txt", shallow = False):
-            print(test_name + " passed in " + str(time_delta) + " seconds.")
-            print_white_space()
-            print_white_space()
+        if os.path.exists(test_name + ".txt"):
+            if fc.cmp(test_name + ".txt", test_name + "_submission.txt", shallow = False):
+                print(test_name + " passed in %.6f seconds." %time_delta)
+                print_white_space()
+                print_white_space()
+            else:
+                print(test_name + " failed in %.6f seconds." %time_delta)
+                print_txts(test_name)
+                print_white_space()
+                print_white_space()
         else:
-            print(test_name + " failed in " + str(time_delta) + " seconds.")
-            print_txts(test_name)
+            print(test_name + " did not create output file.")
             print_white_space()
             print_white_space()
 
